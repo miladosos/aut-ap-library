@@ -1,0 +1,336 @@
+openapi: 3.0.0
+info:
+  title: Library Management API
+  version: 1.0.0
+  description: A simple library management system API with book reservations
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Book ID
+        title:
+          type: string
+          description: Book title
+        author:
+          type: string
+          description: Book author
+        isbn:
+          type: string
+          description: Book ISBN
+        is_reserved:
+          type: boolean
+          description: Whether the book is reserved
+        reserved_by:
+          type: string
+          description: ID of user who reserved the book
+      required:
+        - title
+        - author
+        - isbn
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID
+        username:
+          type: string
+          description: Username
+        name:
+          type: string
+          description: Full name
+        email:
+          type: string
+          description: Email address
+        reserved_books:
+          type: array
+          items:
+            type: string
+          description: List of reserved book IDs
+      required:
+        - username
+        - name
+        - email
+
+    Reservation:
+      type: object
+      properties:
+        book_id:
+          type: string
+          description: Book ID
+        user_id:
+          type: string
+          description: User ID
+        reservation_date:
+          type: string
+          format: date-time
+          description: Reservation date
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+
+  securitySchemes:
+    user_id:
+      type: apiKey
+      in: header
+      name: user_id
+      description: User ID for authentication
+
+paths:
+  /books:
+    get:
+      summary: List all books
+      responses:
+        "200":
+          description: List of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+    post:
+      summary: Create a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+      responses:
+        "201":
+          description: Book created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /books/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Book ID
+    get:
+      summary: Get book details
+      responses:
+        "200":
+          description: Book details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete a book
+      responses:
+        "200":
+          description: Book deleted
+        "400":
+          description: Cannot delete book - book is currently reserved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users:
+    get:
+      summary: List all users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid input or duplicate username
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: User ID
+    get:
+      summary: Get user details
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Update user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /books/{id}/reserve:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Book ID
+    post:
+      summary: Reserve a book
+      security:
+        - user_id: []
+      responses:
+        "200":
+          description: Book reserved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "400":
+          description: Book already reserved or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Book or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Cancel a reservation
+      security:
+        - user_id: []
+      responses:
+        "200":
+          description: Reservation cancelled
+        "400":
+          description: Book not reserved by user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/{id}/reservations:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: User ID
+    get:
+      summary: Get user's reservations
+      security:
+        - user_id: []
+      responses:
+        "200":
+          description: List of reserved books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+        "403":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
