@@ -137,7 +137,7 @@ library/
 1. Start the Flask server:
 
 ```bash
-python app.py
+uv run main.py
 ```
 
 2. The application will be available at `http://localhost:8080`
