@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>All Books</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <td><a href="{{ url_for('get_book', book_id=book.id) }}">{{ book.id }}</a></td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>
+                        <span class="status {% if book.is_reserved %}reserved{% else %}available{% endif %}">
+                            {% if book.is_reserved %}Reserved{% else %}Available{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if book.is_reserved %}
+                            <button onclick="handleRelease('{{ book.id }}')" class="btn btn-danger">
+                                Release
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('get_book', book_id=book.id) }}" class="btn btn-primary">
+                                Reserve
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

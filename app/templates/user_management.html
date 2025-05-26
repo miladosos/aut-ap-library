@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>User Management</h1>
+
+    <!-- Create User Form -->
+    <div class="form-section">
+        <h2>Create New User</h2>
+        <form id="createUserForm" onsubmit="event.preventDefault(); handleCreateUser()">
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="new_username" required>
+            </div>
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" id="new_name" required>
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="new_email" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create User</button>
+        </form>
+    </div>
+
+    <!-- Update User Form -->
+    <div class="form-section">
+        <h2>Update Existing User</h2>
+        <form id="updateUserForm" onsubmit="event.preventDefault(); handleUpdateUser()">
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="update_user_id" required>
+            </div>
+            <div class="form-group">
+                <label>New Username:</label>
+                <input type="text" id="update_username" required>
+            </div>
+            <div class="form-group">
+                <label>New Name:</label>
+                <input type="text" id="update_name" required>
+            </div>
+            <div class="form-group">
+                <label>New Email:</label>
+                <input type="email" id="update_email" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update User</button>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    function validateEmail(email) {
+        const regex = /^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{3}$/;
+        return regex.test(email);}
+
+    // async function handleCreateUser() {
+    //     const email = document.getElementById('new_email').value;
+    //     const errorElement = document.getElementById('create-user-error');
+    //
+    //     if (!validateEmail(email)) {
+    //         errorElement.textContent = 'Invalid email format (example@domain.com)';
+    //         return;
+    //     }
+    //     const formData = {
+    //         username: document.getElementById('new_username').value,
+    //         name: document.getElementById('new_name').value,
+    //         email: document.getElementById('new_email').value
+    //     };
+    //
+    //     try {
+    //         const response = await fetch('/api/v1/users', {
+    //             method: 'POST',
+    //             headers: {'Content-Type': 'application/json'},
+    //             body: JSON.stringify(formData)
+    //         });
+    //
+    //         const result = await response.json();
+    //         if(response.ok) {
+    //             alert(`User created successfully! ID: ${result.id}`);
+    //             document.getElementById('createUserForm').reset();
+    //         } else {
+    //             throw new Error(result.error || 'Creation failed');
+    //         }
+    //     } catch (error) {
+    //         alert(error.message);
+    //     }
+    // }
+    async function handleCreateUser() {
+    const formData = { /* ... */ };
+    const errorElement = document.getElementById('create-user-error');
+    errorElement.textContent = '';
+
+    // Email validation
+    if (!validateEmail(formData.email)) {
+        errorElement.textContent = 'Invalid email format. Use example@domain.com';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/v1/users', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Handle username exists error
+            if (data.error.includes('already exists')) {
+                errorElement.textContent = 'Username already taken';
+            } else {
+                throw new Error(data.error);
+            }
+            return;
+        }
+
+        alert(`User created! ID: ${data.id}`);
+        document.getElementById('createUserForm').reset();
+
+    } catch (error) {
+        errorElement.textContent = error.message;
+    }
+}
+
+    async function handleUpdateUser() {
+        const userId = document.getElementById('update_user_id').value;
+        const formData = {
+            username: document.getElementById('update_username').value,
+            name: document.getElementById('update_name').value,
+            email: document.getElementById('update_email').value
+        };
+
+        try {
+            const response = await fetch(`/api/v1/users/${userId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            if(response.ok) {
+                alert('User updated successfully!');
+                document.getElementById('updateUserForm').reset();
+            } else {
+                throw new Error(result.error || 'Update failed');
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+
+
+
+
+        // ... rest of existing handleCreateUser code ...
+        // Don't forget to clear error on success
+    }
+</script>
+{% endblock %}
