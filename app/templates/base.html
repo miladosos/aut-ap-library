@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management</title>
+    <style>
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+        }
+
+        .navbar {
+            background-color: #333;
+            padding: 1rem;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-right: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .status.available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status.reserved {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .details-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .reservation-section {
+            margin-top: 2rem;
+        }
+        .error-message {
+    color: #dc3545;
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+}
+        .form-section {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.form-section h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+input[type="text"],
+input[type="email"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.error-message {
+    color: #dc3545;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+}
+    </style>
+</head>
+<body>
+   <nav class="navbar">
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('get_users') }}">Users</a>
+    <a href="{{ url_for('get_books') }}">Books</a>
+    <a href="{{ url_for('user_management') }}">Manage Users</a>
+    <a href="{{ url_for('book_management') }}">Manage Books</a>
+</nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+    async function handleReservation(bookId) {
+    const userId = document.getElementById('user_id_input').value.trim();
+    const errorElement = document.getElementById('error-message');
+    errorElement.textContent = '';
+
+    if (!userId) {
+        errorElement.textContent = 'Please enter a User ID';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/books/${bookId}/reserve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+
+        // Handle response
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Reservation failed');
+        }
+
+        location.reload();
+    } catch (error) {
+        errorElement.textContent = error.message;
+        console.error('Reservation error:', error);
+    }
+}
+    async function handleRelease(bookId) {
+            const response = await fetch(`/api/v1/books/${bookId}/reserve`, {
+                method: 'DELETE'
+            });
+            if(response.ok) {
+                location.reload();
+            }
+        }
+    </script>
+
+
+<!-- Add error display to create form -->
+<div class="form-section">
+    <h2>Create New User</h2>
+    <div id="create-user-error" class="error-message"></div>
+    <!-- ... rest of create form ... -->
+</div>
+</body>
+</html>

@@ -1,44 +1,169 @@
 {
-  "users": [
-    {
-      "id": "1",
-      "username": "john_doe",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "reserved_books": []
-    },
-    {
-      "id": "2",
-      "username": "jane_smith",
-      "name": "Jane Smith",
-      "email": "jane@example.com",
-      "reserved_books": []
-    }
-  ],
-  "books": [
-    {
-      "id": "1",
-      "title": "The Great Gatsby",
-      "author": "F. Scott Fitzgerald",
-      "isbn": "978-0743273565",
-      "is_reserved": false,
-      "reserved_by": null
-    },
-    {
-      "id": "2",
-      "title": "To Kill a Mockingbird",
-      "author": "Harper Lee",
-      "isbn": "978-0446310789",
-      "is_reserved": false,
-      "reserved_by": null
-    },
-    {
-      "id": "3",
-      "title": "1984",
-      "author": "George Orwell",
-      "isbn": "978-0451524935",
-      "is_reserved": false,
-      "reserved_by": null
-    }
-  ]
+    "users_id": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+    ],
+    "books_id": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+    ],
+    "reservations_id": [
+        "1",
+        "2"
+    ],
+    "users": [
+        {
+            "id": "1",
+            "username": "john_doe",
+            "name": "John Doe",
+            "email": "john@example.com",
+            "reserved_books": [
+                {
+                    "book_id": "1",
+                    "reservation_id": "1"
+                }
+            ]
+        },
+        {
+            "id": "2",
+            "username": "jane_smith",
+            "name": "Jane Smith",
+            "email": "jane@example.com",
+            "reserved_books": [
+                {
+                    "book_id": "2",
+                    "reservation_id": "2"
+                }
+            ]
+        },
+        {
+            "id": "3",
+            "username": "ali_jafari2",
+            "name": "ali jafari",
+            "email": "ali@example.com",
+            "reserved_books": []
+        },
+        {
+            "id": "4",
+            "username": "ali_jafari",
+            "name": "ali jafari",
+            "email": "ali@example.com",
+            "reserved_books": []
+        },
+        {
+            "id": "5",
+            "username": "ali_jafari22",
+            "name": "ali jafari",
+            "email": "ali@example.com",
+            "reserved_books": []
+        },
+        {
+            "id": "6",
+            "username": "testuser",
+            "name": "Test User",
+            "email": "test@example.com",
+            "reserved_books": []
+        },
+        {
+            "id": "7",
+            "username": "aliiii",
+            "name": "ai",
+            "email": "ali.sadf@gmail.com",
+            "reserved_books": []
+        },
+        {
+            "id": "8",
+            "username": "ali",
+            "name": "ali",
+            "email": "ali@gmail.com",
+            "reserved_books": []
+        }
+    ],
+    "books": [
+        {
+            "id": "1",
+            "title": "The Great Gatsby",
+            "author": "F. Scott Fitzgerald",
+            "isbn": "978-0743273565",
+            "is_reserved": true,
+            "reserved_by": {
+                "user_id": "1",
+                "reservation_id": "1"
+            }
+        },
+        {
+            "id": "2",
+            "title": "To Kill a Mockingbird",
+            "author": "Harper Lee",
+            "isbn": "978-0446310789",
+            "is_reserved": true,
+            "reserved_by": {
+                "user_id": "2",
+                "reservation_id": "2"
+            }
+        },
+        {
+            "id": "3",
+            "title": "1984",
+            "author": "George Orwell",
+            "isbn": "978-0451524935",
+            "is_reserved": false,
+            "reserved_by": null
+        },
+        {
+            "id": "4",
+            "title": "test2",
+            "author": "ali jafari",
+            "isbn": "987654321",
+            "is_reserved": false,
+            "reserved_by": null
+        },
+        {
+            "id": "5",
+            "title": "test",
+            "author": "ali jafari",
+            "isbn": "123456789",
+            "is_reserved": false,
+            "reserved_by": null
+        },
+        {
+            "id": "6",
+            "title": "Test Book",
+            "author": "Test Author",
+            "isbn": "1234567890",
+            "is_reserved": false,
+            "reserved_by": null
+        }
+    ],
+    "reservations": [
+        {
+            "id": "1",
+            "book_id": "1",
+            "user_id": "1",
+            "reservation_date": [
+                "2025-05-26",
+                "23:40:01"
+            ]
+        },
+        {
+            "id": "2",
+            "book_id": "2",
+            "user_id": "2",
+            "reservation_date": [
+                "2025-05-26",
+                "22:02:35"
+            ]
+        }
+    ]
 }
