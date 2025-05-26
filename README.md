@@ -13,11 +13,7 @@ A simple library management system built with Flask that allows users to manage 
 - [Running Tests](#running-tests)
 - [Data Storage](#data-storage)
 - [API Documentation](#api-documentation)
-  - [Base URL](#base-url)
-  - [Authentication](#authentication)
-  - [API Endpoints](#api-endpoints)
-  - [Request/Response Examples](#requestresponse-examples)
-- [Using Swagger Documentation](#using-swagger-documentation)
+- [Frontend](#frontend)
 - [Notes](#notes)
 
 ## Features
@@ -284,6 +280,62 @@ The API documentation is available in Swagger/OpenAPI format. Here's how to use 
    - `/reservations`: Book reservation endpoints
 
 Note: When testing endpoints that require authentication, make sure to include the `user_id` header in your requests.
+
+## Frontend
+
+The application includes a modern, user-friendly web interface built with HTML, CSS, and JavaScript. The frontend provides the following features:
+
+1. **Book Management**
+
+   - View all books in a table format
+   - Add new books
+   - Delete books
+   - Reserve and cancel book reservations
+
+2. **User Management**
+
+   - View all users
+   - Add new users
+   - Edit user information
+   - View user's reserved books
+
+3. **Reservation Management**
+   - View reservations by user ID
+   - Cancel reservations
+   - See reservation status for each book
+
+### Using the Frontend
+
+1. Start the Flask server:
+
+   ```bash
+   uv run main.py
+   ```
+
+2. Open your web browser and navigate to:
+
+   ```
+   http://localhost:8080
+   ```
+
+3. The interface is divided into three main sections:
+
+   - Books: Manage the library's book collection
+   - Users: Manage user accounts
+   - Reservations: View and manage book reservations
+
+4. **Authentication**
+
+   - For operations that require authentication (like reserving books), you'll be prompted to enter your user ID
+   - Make sure to keep track of your user ID after creating an account
+
+5. **Features**
+   - Responsive design that works on both desktop and mobile devices
+   - Real-time updates when making changes
+   - Clear status indicators for book availability
+   - Intuitive navigation between different sections
+   - Modal forms for adding new books and users
+   - Confirmation dialogs for destructive actions
 
 ## Notes
 

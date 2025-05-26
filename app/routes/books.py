@@ -1,7 +1,6 @@
 from app.application import app
 from flask import jsonify
 
-
 @app.route("/api/v1/books")
 def get_books():
     """
