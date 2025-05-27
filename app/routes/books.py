@@ -1,61 +1,70 @@
 from app.application import app
-from flask import jsonify
+from flask import jsonify, request
+import json
 
 @app.route("/api/v1/books")
 def get_books():
-    """
-    Get all books
+    
+    with open("db.json") as db:
+        data = json.load(db)
 
-    Returns:
-        list: List of books
-    """
-    return jsonify({"books": []})
+    return jsonify(data["books"]), 200
 
 
 @app.route("/api/v1/books/<book_id>")
 def get_book(book_id: str):
-    """
-    Get a book by id
 
-    Args:
-        book_id (str): The id of the book
+    with open("db.json") as db:
+        data = json.load(db)
 
-    Returns:
-        dict: Book details
+    for book in data["books"]:
+        if (book["id"] == book_id):
+            return jsonify(book), 200
 
-    Raises:
-        NotFound: If the book is not found
-    """
-    return jsonify({"book": {}})
+    return jsonify({"error": f"Book {book_id} not found"}), 404
 
 
 @app.route("/api/v1/books", methods=["POST"])
 def create_book():
-    """
-    Create a new book
+    data = request.get_json()
 
-    Returns:
-        dict: Book details
+    if (not "title" in data or not "author" in data or not "isbn" in data):
+        return jsonify({"error": "Invalid input"}), 400
 
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"book": {}})
+    with open("db.json") as f:
+        db = json.load(f)
+
+    data["id"] = str(len(db["books"]) + 1)
+
+    data["is_reserved"] = False
+
+    data["reserved_by"] = None
+
+    db["books"].append(data)
+
+    with open("db.json", "w") as f:
+        json.dump(db, f)
+
+    return jsonify(data), 201
 
 
 @app.route("/api/v1/books/<book_id>", methods=["DELETE"])
 def delete_book(book_id: str):
-    """
-    Delete a book by id
 
-    Args:
-        book_id (str): The id of the book
+    with open("db.json") as db:
+        data = json.load(db)
 
-    Returns:
-        dict: Success message
+    for book in data["books"]:
+        if (book["id"] == book_id):
+            if (book["is_reserved"]):
+                return jsonify({"error": f"Book {book_id} is reserved"}), 400
 
-    Raises:
-        NotFound: If the book is not found
-        BadRequest: If the book is reserved
-    """
-    return jsonify({"message": "Book deleted"})
+            else:
+                data["books"].remove(book)
+
+                with open("db.json", "w") as db:
+                    json.dump(data, db)
+                
+                return jsonify(), 200
+
+    return jsonify({"error": f"Book {book_id} not found"}), 404
