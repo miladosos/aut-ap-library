@@ -3,7 +3,7 @@ import json
 import pytest
 
 from app.application import app
-
+import time
 
 @pytest.fixture
 def client():
@@ -21,7 +21,7 @@ def setup_book_and_user(client):
     book_id = json.loads(book_response.data)["id"]
 
     # Create a user
-    new_user = {"username": "reservetest", "name": "Reserve Test", "email": "reserve@example.com"}
+    new_user = {"username": "reservetest" + str(hash(time.time())), "name": "Reserve Test", "email": "reserve@example.com"}
     user_response = client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
     user_id = json.loads(user_response.data)["id"]
 

@@ -1,62 +1,95 @@
 from datetime import datetime
-
 from flask import jsonify, request
-
 from app.application import app
+import json
 
 
 @app.route("/api/v1/books/<book_id>/reserve", methods=["POST"])
 def reserve_book(book_id: str):
-    """
-    Reserve a book for a user
+    user_id = request.headers.get("user_id")
+    
+    if (user_id == None):
+        return jsonify({"error": "Invalid input"}), 400
 
-    Args:
-        book_id (str): The id of the book to reserve
+    with open("db.json") as f:
+        db = json.load(f)
 
-    Returns:
-        dict: Reservation details
+    u = None
+    b = None
 
-    Raises:
-        BadRequest: If user_id header is missing or book is already reserved
-        NotFound: If the book or user is not found
-    """
-    return jsonify(
-        {"book_id": book_id, "user_id": request.headers.get("user_id"), "reservation_date": datetime.now().isoformat()}
-    )
+    for book in db["books"]:
+        if (book["id"] == book_id):
+            b = book
+
+    for user in db["users"]:
+        if (user["id"] == user_id):
+            u = user
+
+    if (u == None or b == None):
+        return jsonify({"error": "Book or User not found"}), 404
+
+    if (b["is_reserved"]):
+        return jsonify({"error": "Book already reserved"}), 400
+
+    b["is_reserved"] = True
+    b["reserved_by"] = user_id
+    u["reserved_books"].append({"book_id": book_id, "user_id": user_id, "reservation_date": datetime.now().isoformat()})
+
+    with open("db.json", "w") as f:
+        json.dump(db, f)
+
+    return jsonify(u["reserved_books"][-1]), 200
 
 
 @app.route("/api/v1/books/<book_id>/reserve", methods=["DELETE"])
 def cancel_reservation(book_id: str):
-    """
-    Cancel a book reservation
+    user_id = request.headers.get("user_id")
+    
+    with open("db.json") as f:
+        db = json.load(f)
 
-    Args:
-        book_id (str): The id of the book to cancel reservation
+    u = None
+    b = None
 
-    Returns:
-        dict: Success message
+    for book in db["books"]:
+        if (book["id"] == book_id):
+            b = book
 
-    Raises:
-        BadRequest: If user_id header is missing or book is not reserved by user
-        NotFound: If the book is not found
-    """
-    return jsonify({"message": "Reservation cancelled successfully"})
+    for user in db["users"]:
+        if (user["id"] == user_id):
+            u = user
+
+    if (u == None or b == None):
+        return jsonify({"error": "Book or User not found"}), 404
+
+    if (b["reserved_by"] != user_id):
+        return jsonify({"error": "Book already reserved"}), 400
+
+    b["is_reserved"] = False
+    b["reserved_by"] = None
+    for res in u["reserved_books"]:
+        if res["book_id"] == book_id:
+            u["reserved_books"].remove(res)
+
+    with open("db.json", "w") as f:
+        json.dump(db, f)
+
+    return jsonify({"message": "Reservation cancelled successfully"}), 200
 
 
 @app.route("/api/v1/users/<user_id>/reservations")
 def get_user_reservations(user_id: str):
-    """
-    Get all reservations for a user
+    
+    with open("db.json") as f:
+        db = json.load(f)
 
-    Args:
-        user_id (str): The id of the user
+    u = None
 
-    Returns:
-        list: List of reserved books
+    for user in db["users"]:
+        if (user["id"] == user_id):
+            u = user
 
-    Raises:
-        BadRequest: If user_id header is missing
-        NotFound: If the user is not found
-        Forbidden: If requesting user is not the same as target user
-    """
-    return jsonify([])
+    if (u == None):
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify(u["reserved_books"]), 200

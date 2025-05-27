@@ -1,62 +1,75 @@
-from flask import jsonify
+from flask import jsonify, request
 from app.application import app
+import json
 
 
 @app.route("/api/v1/users")
 def get_users():
-    """
-    Get all users
+    
+    with open("db.json") as db:
+        data = json.load(db)
 
-    Returns:
-        list: List of users
-    """
-    return jsonify({"users": []})
+    return jsonify(data["users"]), 200
 
 
 @app.route("/api/v1/users/<user_id>")
 def get_user(user_id: str):
-    """
-    Get a user by id
 
-    Args:
-        user_id (str): The id of the user
+    with open("db.json") as db:
+        data = json.load(db)
 
-    Returns:
-        dict: User details
+    for user in data["users"]:
+        if (user["id"] == user_id):
+            return jsonify(user), 200
 
-    Raises:
-        NotFound: If the user is not found
-    """
-    return jsonify({"user": {}})
+    return jsonify({"error": f"User {user_id} not found"}), 404
 
 
 @app.route("/api/v1/users", methods=["POST"])
 def create_user():
-    """
-    Create a new user
+    data = request.get_json()                                               
+                                                                           
+    if (not "username" in data or not "name" in data or not "email" in data): 
+        return jsonify({"error": "Invalid input"}), 400                     
+                                                                           
+    with open("db.json") as f:                                              
+       db = json.load(f)
 
-    Returns:
-        dict: User details
+    for user in db["users"]:
+        if (user["username"] == data["username"]):
+            return jsonify({"error": "Username already exists"}), 400                     
+                                                                           
+    data["id"] = str(len(db["users"]) + 1)                                  
+                                                                           
+    data["reserved_books"] = []                                             
+                                                                           
+    db["users"].append(data)                                                
+                                                                           
+    with open("db.json", "w") as f:                                         
+       json.dump(db, f)       
 
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"user": {}})
-
+    return jsonify(data), 201                                               
 
 @app.route("/api/v1/users/<user_id>", methods=["PUT"])
 def update_user(user_id: str):
-    """
-    Update a user by id
+    data = request.get_json()                                               
+    
+    for key in data.keys():
+        if (not key in {"username", "name", "email"}):
+            return jsonify({"error": "Invalid input"}), 400
 
-    Args:
-        user_id (str): The id of the user
+    with open("db.json") as f:
+        db = json.load(f)
 
-    Returns:
-        dict: User details
+    for user in db["users"]:
+        if (user["id"] == user_id):
 
-    Raises:
-        BadRequest: If the request body is invalid
-        NotFound: If the user is not found
-    """
-    return jsonify({"user": {}})
+            for key in data.keys():
+                user[key] = data[key]
+
+            with open("db.json", "w") as f:                                         
+                json.dump(db, f)  
+            
+            return jsonify(user), 200
+
+    return jsonify({"error": f"User {user_id} not found"}), 404
