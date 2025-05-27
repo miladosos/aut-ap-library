@@ -5,14 +5,19 @@ from werkzeug.exceptions import BadRequest, NotFound, Forbidden
 
 from app.application import app
 
+import os
 import json
 
 
-with open('db.json', 'r') as file:
+current_dir = os.path.dirname(__file__)
+
+db_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'db.json'))
+
+with open(db_path, 'r') as file:
     DATABASE = json.load(file)
 
 def commit():
-    with open('db.json', 'w') as f:
+    with open(db_path, 'w') as f:
         json.dump(DATABASE, f)
 
 def get_book(book_id):
