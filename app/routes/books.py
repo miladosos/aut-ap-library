@@ -4,7 +4,6 @@ from app.application import app
 from flask import jsonify, request, render_template
 from .data_base import *
 
-
 @app.route("/api/v1/books")
 def get_books():
     """
