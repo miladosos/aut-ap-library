@@ -58,7 +58,7 @@ def create_book():
 
     try:
         book = request.get_json()
-        print(book)
+        # print(book)
 
         book["id"] = str(int(DATABASE["books"][-1]["id"]) + 1)
         book["is_reserved"] = False
