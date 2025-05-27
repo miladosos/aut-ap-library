@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Book Management</h1>
+
+    <!-- Create Book Form -->
+    <div class="form-section">
+        <h2>Add New Book</h2>
+        <form id="createBookForm" onsubmit="event.preventDefault(); handleCreateBook()">
+            <div class="form-group">
+                <label>Title:</label>
+                <input type="text" id="new_title" required>
+            </div>
+            <div class="form-group">
+                <label>Author:</label>
+                <input type="text" id="new_author" required>
+            </div>
+            <div class="form-group">
+                <label>ISBN:</label>
+                <input type="text" id="new_isbn" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Book</button>
+        </form>
+    </div>
+
+    <!-- Delete Book Form -->
+    <div class="form-section">
+        <h2>Delete Book</h2>
+        <form id="deleteBookForm" onsubmit="event.preventDefault(); handleDeleteBook()">
+            <div class="form-group">
+                <label>Book ID:</label>
+                <input type="text" id="delete_book_id" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Delete Book</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    async function handleCreateBook() {
+        const formData = {
+            title: document.getElementById('new_title').value,
+            author: document.getElementById('new_author').value,
+            isbn: document.getElementById('new_isbn').value
+        };
+
+        try {
+            const response = await fetch('/api/v1/books', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            if(response.ok) {
+                alert(`Book added successfully! ID: ${result.id}`);
+                document.getElementById('createBookForm').reset();
+            } else {
+                throw new Error(result.error || 'Creation failed');
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    async function handleDeleteBook() {
+        const bookId = document.getElementById('delete_book_id').value;
+
+        try {
+            const response = await fetch(`/api/v1/books/${bookId}`, {
+                method: 'DELETE'
+            });
+
+            if(response.ok) {
+                alert('Book deleted successfully!');
+                document.getElementById('deleteBookForm').reset();
+            } else {
+                const error = await response.json();
+                throw new Error(error.error || 'Deletion failed');
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+</script>
+{% endblock %}

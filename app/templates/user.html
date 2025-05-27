@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="details-card">
+    <h1>{{ user.name }}</h1>
+    <p><strong>ID:</strong> {{ user.id }}</p>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    <div class="reserved-books">
+        <h3>Reserved Books ({{ user.reserved_books|length }})</h3>
+        <ul>
+            {% for reservation in user.reserved_books %}
+            <li>
+                <a href="{{ url_for('get_book', book_id=reservation.book_id) }}">
+                    Book #{{ reservation.book_id }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
