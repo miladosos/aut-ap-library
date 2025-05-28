@@ -10,7 +10,7 @@ def get_books():
                                   
     books = data["books"]         
                                   
-    return jsonify(books)
+    return jsonify(books), 200
 
 
 @app.route("/api/v1/books/<book_id>")
@@ -21,7 +21,7 @@ def get_book(book_id: str):
                                   
     for book in data["books"]:
         if book["id"] == book_id:
-            return jsonify(book)
+            return jsonify(book), 200
     
     return jsonify({"error": f"book {book_id} not found."}), 404
 
@@ -67,7 +67,7 @@ def delete_book(book_id: str):
 
             with open("db.json", "w") as db:
                 json.dump(data, db)
-            return jsonify()
+            return jsonify(), 200
 
         elif book_id == data["books"][i]["id"] and data["books"][i]["is_reserved"] == True:
             return jsonify({"error": "Cannot delete book - book is currently reserved."}), 400

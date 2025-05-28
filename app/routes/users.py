@@ -11,7 +11,7 @@ def get_users():
                                   
     users = data["users"]         
                                   
-    return jsonify(users)
+    return jsonify(users), 200
 
 
 @app.route("/api/v1/users/<user_id>")
@@ -22,7 +22,7 @@ def get_user(user_id: str):
                                   
     for user in data["users"]:
         if user["id"] == user_id:
-            return jsonify(user)
+            return jsonify(user), 200
     
     return jsonify({"error": f"user {user_id} not found."}), 404
 
@@ -46,9 +46,9 @@ def create_user():
       "reserved_books": []
     }
 
-    # for user in db["users"]:
-    #     if user["username"] == new_user["username"]:
-    #         return jsonify({"error": "Invalid input or duplicate username."}), 400
+    for user in data["users"]:
+        if user["username"] == new_user["username"]:
+            return jsonify({"error": "Invalid input or duplicate username."}), 400
 
     data["users"].append(new_user)
 
@@ -63,19 +63,21 @@ def update_user(user_id: str):
     
     user_ch = request.get_json()
 
-    if not "username" in user_ch or not "name" in user_ch or not "email" in user_ch:
-        return jsonify({"error": "Invalid input."}), 400
+    for i in user_ch.keys():
+        if not i in {"username", "name", "email"}:
+            return jsonify({"error": "Invalid input"}), 400
 
     with open("db.json") as db:   
         data = json.load(db)
 
     for user in data["users"]:
         if user["id"] == user_id:
-            user["username"] = user_ch["username"]
-            user["name"] = user_ch["name"]
-            user["email"] = user_ch["email"]
+            
+            for i in user_ch.keys():
+                user[i] = user_ch[i]
+
             with open("db.json", "w") as db:
                 json.dump(data, db)
-            return jsonify(), 200
+            return jsonify(user), 200
     
     return jsonify({"error": "User not found."}), 404
