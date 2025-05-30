@@ -13,6 +13,105 @@
       "name": "Jane Smith",
       "email": "jane@example.com",
       "reserved_books": []
+    },
+    {
+      "id": "3",
+      "username": "testuser",
+      "name": "Test User",
+      "email": "test@example.com",
+      "reserved_books": [
+        "5"
+      ]
+    },
+    {
+      "id": "4",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": [
+        "6"
+      ]
+    },
+    {
+      "id": "5",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": [
+        "7"
+      ]
+    },
+    {
+      "id": "6",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "7",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "8",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "9",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "10",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": [
+        "12"
+      ]
+    },
+    {
+      "id": "11",
+      "username": "testuser",
+      "name": "Test User",
+      "email": "test@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "12",
+      "username": "duplicateuser",
+      "name": "Test User",
+      "email": "test@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "13",
+      "username": "duplicateuser",
+      "name": "Test User",
+      "email": "test@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "14",
+      "username": "updatetest",
+      "name": "Updated Name",
+      "email": "updated@example.com",
+      "reserved_books": []
+    },
+    {
+      "id": "15",
+      "username": "reservetest",
+      "name": "Reserve Test",
+      "email": "reserve@example.com",
+      "reserved_books": []
     }
   ],
   "books": [
@@ -39,6 +138,78 @@
       "isbn": "978-0451524935",
       "is_reserved": false,
       "reserved_by": null
+    },
+    {
+      "id": "4",
+      "title": "Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": false,
+      "reserved_by": null
+    },
+    {
+      "id": "5",
+      "title": "Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": true,
+      "reserved_by": "3"
+    },
+    {
+      "id": "6",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": true,
+      "reserved_by": "4"
+    },
+    {
+      "id": "7",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": true,
+      "reserved_by": "5"
+    },
+    {
+      "id": "8",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": false,
+      "reserved_by": null
+    },
+    {
+      "id": "9",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": false,
+      "reserved_by": null
+    },
+    {
+      "id": "10",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": false,
+      "reserved_by": null
+    },
+    {
+      "id": "11",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": false,
+      "reserved_by": null
+    },
+    {
+      "id": "12",
+      "title": "Reservation Test Book",
+      "author": "Test Author",
+      "isbn": "1234567890",
+      "is_reserved": true,
+      "reserved_by": "10"
     }
   ]
 }
