@@ -3,7 +3,7 @@ name = "library"
 version = "0.1.0"
 description = "A simple library management system"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "flask>=3.1.1",
     "pytest>=8.3.5",
