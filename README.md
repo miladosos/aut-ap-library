@@ -97,7 +97,7 @@ uv venv
 source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 ```
 
-4. Install dependencies:
+4. Install dependencies:o
 
 ```bash
 uv sync
