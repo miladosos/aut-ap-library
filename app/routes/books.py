@@ -22,16 +22,27 @@ def get_book(book_id: str):
 @app.route("/api/v1/books", methods=["POST"])
 def create_book():
     
+    data = request.get_json()
+    if not data or not isinstance(data, dict):
+        return jsonify({"error": "Invalid request body"}), 400
+
+    required_fields = {"title", "author", "isbn"}
+    if not required_fields.issubset(data.keys()):
+        return jsonify({"error": "Missing required fields"}), 400
+
     books = db.data.get('books', [])
-    new_book = request.json
-    new_book['id'] = str(len(books)+ 1)
-    print(new_book)
-    if new_book and not new_book in books:
-        books.append(new_book)
-        db.data['books'] = books
-        db.save()
-        return jsonify(new_book), 201
-    return jsonify({"error": "Bad Request"}), 400
+    data["id"] = str(len(books) + 1)
+    data["is_reserved"] = False
+    data["reserved_by"] = None
+    books.append({
+        "id": data["id"],
+        "title": data["title"],
+        "author": data["author"],
+        "reserved_by": data["reserved_by"],
+        "is_reserved": data["is_reserved"]
+    })
+    db.save()
+    return jsonify({"book": data}), 201
 
 
 @app.route("/api/v1/books/<book_id>", methods=["DELETE"])
