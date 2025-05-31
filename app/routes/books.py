@@ -1,61 +1,60 @@
 from app.application import app
 from flask import jsonify
+import json
+
+class Database:
+    def __init__(self):
+        with open('db.json', 'r') as file:
+            self.book_info = json.load(file)
+
+    def get_db(self):
+        return self.book_info
 
 @app.route("/api/v1/books")
 def get_books():
-    """
-    Get all books
 
-    Returns:
-        list: List of books
-    """
-    return jsonify({"books": []})
+    book_info = Database().get_db()
+    return jsonify({"books": book_info["books"]})
 
 
 @app.route("/api/v1/books/<book_id>")
 def get_book(book_id: str):
-    """
-    Get a book by id
 
-    Args:
-        book_id (str): The id of the book
+    book_info = Database().get_db()["books"]
+    for i in book_info:
+        if i["id"] == book_id:
+            book = i
+    if book is None:
+        abort(404, description="Book not found")
 
-    Returns:
-        dict: Book details
+    return jsonify({"book": book})
 
-    Raises:
-        NotFound: If the book is not found
-    """
-    return jsonify({"book": {}})
 
 
 @app.route("/api/v1/books", methods=["POST"])
-def create_book():
-    """
-    Create a new book
+def create_book(id, title, isbn, author):
+    book_info = Database().get_db()["books"]
+    for i in book_info:
+        if i["id"] == id or i["title"] == title or i["isbn"] == isbn or i["author"] == author:
+            abort(400, description="Invalid request body")
 
-    Returns:
-        dict: Book details
+    new_book = {"author": author,
+                "id": id,
+                "is_reserved": false,
+                "isbn": isbn,
+                "reserved_by": null,
+                "title": title}
 
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"book": {}})
-
+    with open('db.json', 'a') as file:
+        json.dump(new_book, file)
 
 @app.route("/api/v1/books/<book_id>", methods=["DELETE"])
 def delete_book(book_id: str):
-    """
-    Delete a book by id
-
-    Args:
-        book_id (str): The id of the book
-
-    Returns:
-        dict: Success message
-
-    Raises:
-        NotFound: If the book is not found
-        BadRequest: If the book is reserved
-    """
-    return jsonify({"message": "Book deleted"})
+    book_info = Database().get_db()["books"]
+    for i, book in book_info:
+        if book["id"] == book_id:
+            book_info.pop(i)
+            with open('db.json', 'w') as file:
+                json.dump(Database().get_db(), file, indent=4)
+            return jsonify({"message": "Book deleted successfully"})
+    return jsonify({"error": "Book not found"}), 404
