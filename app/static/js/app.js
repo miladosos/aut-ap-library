@@ -163,11 +163,8 @@ async function reserveBook(bookId) {
     if (!userId) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/books/${bookId}/reserve`, {
-            method: 'POST',
-            headers: {
-                'user_id': userId
-            }
+        const response = await fetch(`${API_BASE_URL}/books/${bookId}/${userId}/reserve`, {
+            method: 'POST'
         });
 
         if (response.ok) {
