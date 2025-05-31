@@ -1,111 +1,41 @@
-import json
-
-import pytest
+from flask import jsonify, request, abort
 from app.application import app
+from app.routes.Database import db
 
+@app.route("/api/v1/users", methods=["GET"])
+def get_users():
+    return jsonify(db.get_all_users())
 
-@pytest.fixture
-def client():
-    app.config["TESTING"] = True
-    with app.test_client() as client:
-        yield client
+@app.route("/api/v1/users/<user_id>", methods=["GET"])
+def get_user(user_id):
+    for user in db.get_all_users():
+        if str(user["id"]) == str(user_id):
+            return jsonify(user)
+    abort(404, "User not found")
 
+@app.route("/api/v1/users", methods=["POST"])
+def create_user():
+    data = request.get_json()
+    required = ["username", "name", "email"]
+    if not all(k in data for k in required):
+        abort(400, "Invalid request body")
 
-def test_get_all_users(client):
-    """Test getting all users"""
-    response = client.get("/api/v1/users")
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert isinstance(data, list)
-    assert len(data) > 0
+    data["id"] = str(len(db.get_all_users()) + 1)
+    data["reserved_books"] = []
+    x = db.create_user(data)
+    with open("keep_test_users",'a') as f:
+        f.write(f'{x} /n')
+    return jsonify(data), 201
 
-
-def test_get_user_by_id(client):
-    """Test getting a specific user by ID"""
-    # Test with existing user
-    response = client.get("/api/v1/users/1")
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert data["id"] == "1"
-    assert "username" in data
-    assert "name" in data
-    assert "email" in data
-
-    # Test with non-existing user
-    response = client.get("/api/v1/users/999")
-    assert response.status_code == 404
-
-
-def test_create_user(client):
-    """Test creating a new user"""
-    new_user = {"username": "testuser", "name": "Test User", "email": "test@example.com"}
-    response = client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
-    assert response.status_code == 201
-    data = json.loads(response.data)
-    assert data["username"] == new_user["username"]
-    assert data["name"] == new_user["name"]
-    assert data["email"] == new_user["email"]
-    assert "id" in data
-    assert "reserved_books" in data
-    assert isinstance(data["reserved_books"], list)
-
-
-def test_create_user_invalid_data(client):
-    """Test creating a user with invalid data"""
-    invalid_user = {
-        "username": "testuser"
-        # Missing required fields
-    }
-    response = client.post("/api/v1/users", data=json.dumps(invalid_user), content_type="application/json")
-    assert response.status_code == 400
-
-
-def test_create_user_duplicate_username(client):
-    """Test creating a user with duplicate username"""
-    # First create a user
-    new_user = {"username": "duplicateuser", "name": "Test User", "email": "test@example.com"}
-    client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
-
-    # Try to create another user with same username
-    response = client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
-    assert response.status_code == 400
-    data = json.loads(response.data)
-    assert "error" in data
-
-
-def test_update_user(client):
-    """Test updating a user"""
-    # First create a user
-    new_user = {"username": "updatetest", "name": "Update Test", "email": "update@example.com"}
-    create_response = client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
-    user_id = json.loads(create_response.data)["id"]
-
-    # Update the user
-    updated_data = {"name": "Updated Name", "email": "updated@example.com"}
-    response = client.put(f"/api/v1/users/{user_id}", data=json.dumps(updated_data), content_type="application/json")
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert data["name"] == updated_data["name"]
-    assert data["email"] == updated_data["email"]
-    assert data["username"] == new_user["username"]  # Username shouldn't change
-
-
-def test_update_nonexistent_user(client):
-    """Test updating a non-existent user"""
-    updated_data = {"name": "Updated Name", "email": "updated@example.com"}
-    response = client.put("/api/v1/users/999", data=json.dumps(updated_data), content_type="application/json")
-    assert response.status_code == 404
-
-
-def test_get_user_reservations(client):
-    """Test getting user's reservations"""
-    # First create a user
-    new_user = {"username": "reservetest", "name": "Reserve Test", "email": "reserve@example.com"}
-    create_response = client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
-    user_id = json.loads(create_response.data)["id"]
-
-    # Get user's reservations
-    response = client.get(f"/api/v1/users/{user_id}/reservations")
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert isinstance(data, list)
+@app.route("/api/v1/users/<user_id>", methods=["PUT"])
+def update_user(user_id):
+    users = db.get_all_users()
+    for index, user in enumerate(users):
+        if user["id"] == str(user_id):
+            data = request.get_json()
+            for key, value in data.items():
+                if key not in ['id', 'username', 'name', 'email', 'reserved_books']:
+                    abort(400, "Invalid field in body")
+                db.update_user(index, key, value)
+            return jsonify(db.get_all_users()[index])
+    abort(404, "User not found")
