@@ -1,62 +1,39 @@
-from flask import jsonify
+from flask import jsonify, request, abort
 from app.application import app
+from app.routes.Database import db
 
-
-@app.route("/api/v1/users")
+@app.route("/api/v1/users", methods=["GET"])
 def get_users():
-    """
-    Get all users
+    return jsonify(db.get_all_users())
 
-    Returns:
-        list: List of users
-    """
-    return jsonify({"users": []})
-
-
-@app.route("/api/v1/users/<user_id>")
-def get_user(user_id: str):
-    """
-    Get a user by id
-
-    Args:
-        user_id (str): The id of the user
-
-    Returns:
-        dict: User details
-
-    Raises:
-        NotFound: If the user is not found
-    """
-    return jsonify({"user": {}})
-
+@app.route("/api/v1/users/<user_id>", methods=["GET"])
+def get_user(user_id):
+    for user in db.get_all_users():
+        if str(user["id"]) == str(user_id):
+            return jsonify(user)
+    abort(404, "User not found")
 
 @app.route("/api/v1/users", methods=["POST"])
 def create_user():
-    """
-    Create a new user
+    data = request.get_json()
+    required = ["username", "name", "email"]
+    if not all(k in data for k in required):
+        abort(400, "Invalid request body")
 
-    Returns:
-        dict: User details
-
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"user": {}})
-
+    data["id"] = str(len(db.get_all_users()) + 1)
+    data["reserved_books"] = []
+    db.create_user(data)
+    return jsonify(data), 201
 
 @app.route("/api/v1/users/<user_id>", methods=["PUT"])
-def update_user(user_id: str):
-    """
-    Update a user by id
-
-    Args:
-        user_id (str): The id of the user
-
-    Returns:
-        dict: User details
-
-    Raises:
-        BadRequest: If the request body is invalid
-        NotFound: If the user is not found
-    """
-    return jsonify({"user": {}})
+def update_user(user_id):
+    users = db.get_all_users()
+    for index, user in enumerate(users):
+        if user["id"] == str(user_id):
+            data = request.get_json()
+            for key, value in data.items():
+                if key not in ['id', 'username', 'name', 'email', 'reserved_books']:
+                    abort(400, "Invalid field in body")
+                db.update_user(index, key, value)
+            return jsonify(db.get_all_users()[index])
+    abort(404, "User not found")
