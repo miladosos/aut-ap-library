@@ -28,6 +28,7 @@ async function loadBooks() {
         const booksList = document.getElementById('books-list');
         booksList.innerHTML = books.map(book => `
             <tr>
+                <td>${book.id}</td>
                 <td>${book.title}</td>
                 <td>${book.author}</td>
                 <td>${book.isbn}</td>
@@ -37,10 +38,10 @@ async function loadBooks() {
                     </span>
                 </td>
                 <td>
-                    ${!book.is_reserved ? 
-                        `<button class="btn btn-sm btn-success btn-action" onclick="reserveBook('${book.id}')">Reserve</button>` :
-                        `<button class="btn btn-sm btn-warning btn-action" onclick="cancelReservation('${book.id}')">Cancel</button>`
-                    }
+                    ${!book.is_reserved ?
+            `<button class="btn btn-sm btn-success btn-action" onclick="reserveBook('${book.id}')">Reserve</button>` :
+            `<button class="btn btn-sm btn-warning btn-action" onclick="cancelReservation('${book.id}')">Cancel</button>`
+        }
                     <button class="btn btn-sm btn-danger btn-action" onclick="deleteBook('${book.id}')">Delete</button>
                 </td>
             </tr>
@@ -49,6 +50,7 @@ async function loadBooks() {
         console.error('Error loading books:', error);
         alert('Error loading books. Please try again.');
     }
+    loadUsers();
 }
 
 // Users
@@ -59,12 +61,14 @@ async function loadUsers() {
         const usersList = document.getElementById('users-list');
         usersList.innerHTML = users.map(user => `
             <tr>
+                <td>${user.id}</td>
                 <td>${user.username}</td>
                 <td>${user.name}</td>
                 <td>${user.email}</td>
-                <td>${user.reserved_books.length}</td>
+                <td>${user["reserved_books"].length}</td>
                 <td>
-                    <button class="btn btn-sm btn-primary btn-action" onclick="editUser('${user.id}')">Edit</button>
+                    <button class="btn btn-sm btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#editUserModal" 
+                    onclick="sendUserId('${user.id}')">Edit</button>
                 </td>
             </tr>
         `).join('');
@@ -75,21 +79,25 @@ async function loadUsers() {
 }
 
 // Reservations
-async function loadReservations(userId) {
+async function loadReservations(user_id) {
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${userId}/reservations`, {
+        const response = await fetch(`${API_BASE_URL}/users/${user_id}/reservations`, {
             headers: {
-                'user_id': userId
-            }
+                'userId': String(user_id)
+            },
+            method: "GET",
         });
+
         const reservations = await response.json();
+
         const reservationsList = document.getElementById('reservations-list');
         reservationsList.innerHTML = reservations.map(reservation => `
             <tr>
-                <td>${reservation.book_title}</td>
-                <td>${new Date(reservation.reservation_date).toLocaleString()}</td>
+                <td>${reservation["book_id"]}</td>
+                <td>${reservation["title"]}</td>
+                <td>${reservation["reserved_time"]}</td>
                 <td>
-                    <button class="btn btn-sm btn-danger btn-action" onclick="cancelReservation('${reservation.book_id}')">Cancel</button>
+                    <button class="btn btn-sm btn-danger btn-action" onclick="cancelReservation('${reservation["book_id"]}')">Cancel</button>
                 </td>
             </tr>
         `).join('');
@@ -104,6 +112,11 @@ document.getElementById('save-book').addEventListener('click', async () => {
     const title = document.getElementById('book-title').value;
     const author = document.getElementById('book-author').value;
     const isbn = document.getElementById('book-isbn').value;
+    if (!title || !author || !isbn) {
+        alert('please fill the blanks');
+        return;
+    }
+
 
     try {
         const response = await fetch(`${API_BASE_URL}/books`, {
@@ -111,9 +124,16 @@ document.getElementById('save-book').addEventListener('click', async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ title, author, isbn })
+            body: JSON.stringify({title, author, isbn})
         });
-
+        if (response.status === 402) {
+            alert('invalid isbn format');
+            return;
+        }
+        if (response.status === 400) {
+            alert('book already exists');
+            return;
+        }
         if (response.ok) {
             bootstrap.Modal.getInstance(document.getElementById('addBookModal')).hide();
             document.getElementById('add-book-form').reset();
@@ -133,25 +153,94 @@ document.getElementById('save-user').addEventListener('click', async () => {
     const username = document.getElementById('user-username').value;
     const name = document.getElementById('user-name').value;
     const email = document.getElementById('user-email').value;
-
+    if (!username || !name || !email) {
+        alert('please fill the blanks');
+        return;
+    }
     try {
         const response = await fetch(`${API_BASE_URL}/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, name, email })
+            body: JSON.stringify({username, name, email})
         });
-
+        console.log(response.statusText)
+        if (response.status === 402) {
+            alert('invalid email format');
+            return;
+        }
+        if (response.status === 403) {
+            alert('invalid username(only a-Z, 0-9, _ and at least 3 character)');
+            return;
+        }
+        if (response.status === 400) {
+            alert('username already exists');
+            return;
+        }
+        console.log(response.status, 'this is the status');
         if (response.ok) {
             bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
             document.getElementById('add-user-form').reset();
+            alert('user added successfully')
             loadUsers();
         } else {
             const error = await response.json();
             alert(error.error || 'Error adding user');
         }
     } catch (error) {
+        console.log(error, 'this is the error');
+        console.error('Error adding user:', error);
+        alert('Error adding user. Please try again.');
+    }
+});
+
+
+// Edit User
+var editing_user_id
+
+function sendUserId(user_id) {
+    editing_user_id = user_id
+}
+
+document.getElementById('edit-user').addEventListener('click', async () => {
+    const username = document.getElementById('user-new-username').value;
+    const name = document.getElementById('user-new-name').value;
+    const email = document.getElementById('user-new-email').value;
+    try {
+
+        const response = await fetch(`${API_BASE_URL}/users/${editing_user_id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username, name, email})
+        });
+        console.log(response.statusText)
+        if (response.status === 402) {
+            alert('invalid email format');
+            return;
+        }
+        if (response.status === 403) {
+            alert('invalid username(only a-Z, 0-9, _ and at least 3 character)');
+            return;
+        }
+        if (response.status === 400) {
+            alert('username already exists');
+            return;
+        }
+        console.log(response.status, 'this is the status');
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            document.getElementById('add-user-form2').reset();
+            alert('user edited successfully')
+            loadUsers();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Error adding user');
+        }
+    } catch (error) {
+        console.log(error, 'this is the error');
         console.error('Error adding user:', error);
         alert('Error adding user. Please try again.');
     }
@@ -159,15 +248,18 @@ document.getElementById('save-user').addEventListener('click', async () => {
 
 // Reserve Book
 async function reserveBook(bookId) {
-    const userId = prompt('Please enter your user ID:');
-    if (!userId) return;
+    const user_id = prompt('Please enter your user ID:');
+    if (!user_id) return;
 
     try {
+
+        console.log(user_id);
         const response = await fetch(`${API_BASE_URL}/books/${bookId}/reserve`, {
             method: 'POST',
             headers: {
-                'user_id': userId
-            }
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({user_id})
         });
 
         if (response.ok) {
@@ -185,19 +277,23 @@ async function reserveBook(bookId) {
 
 // Cancel Reservation
 async function cancelReservation(bookId) {
-    const userId = prompt('Please enter your user ID:');
-    if (!userId) return;
+    const user_id = prompt('Please enter your user ID:');
+    if (!user_id) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/books/${bookId}/reserve`, {
             method: 'DELETE',
             headers: {
-                'user_id': userId
-            }
+                'userId': String(user_id)
+            },
         });
-
+        if (response.status === 400) {
+            alert('user ID is wrong');
+            return;
+        }
         if (response.ok) {
             loadBooks();
+            loadReservations(String(user_id));
             alert('Reservation cancelled successfully!');
         } else {
             const error = await response.json();
