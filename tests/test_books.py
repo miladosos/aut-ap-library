@@ -1,7 +1,5 @@
 import json
-
 import pytest
-
 from app.application import app
 
 
