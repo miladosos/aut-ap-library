@@ -1,62 +1,64 @@
-from flask import jsonify
+from flask import jsonify, request
 from app.application import app
-
+from database import db
 
 @app.route("/api/v1/users")
 def get_users():
-    """
-    Get all users
-
-    Returns:
-        list: List of users
-    """
-    return jsonify({"users": []})
+    
+    users = db.data.get('users', [])
+    return jsonify({"users": [users]})
 
 
 @app.route("/api/v1/users/<user_id>")
 def get_user(user_id: str):
-    """
-    Get a user by id
+    
+    users = db.data.get('users', [])
+    for i in users:
+        if i.get('id') == user_id:
+            return jsonify({"user": i})
+    return jsonify({"error": "user not found"}), 404
 
-    Args:
-        user_id (str): The id of the user
-
-    Returns:
-        dict: User details
-
-    Raises:
-        NotFound: If the user is not found
-    """
-    return jsonify({"user": {}})
 
 
 @app.route("/api/v1/users", methods=["POST"])
 def create_user():
-    """
-    Create a new user
+    
+    data = request.get_json()
+    if not data or not isinstance(data, dict):
+        return jsonify({"error": "Invalid request body"}), 400
 
-    Returns:
-        dict: User details
+    required_fields = {"name", "email"}
+    if not required_fields.issubset(data.keys()):
+        return jsonify({"error": "Missing required fields"}), 400
 
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"user": {}})
+    users = db.data.get('users', [])
+    data["id"] = str(len(users) + 1)
+
+    users.append({
+        "id": data["id"],
+        "name": data["name"],
+        "email": data["email"]
+    })
+    db.save()
+    return jsonify({"user": data}), 201
+    
 
 
 @app.route("/api/v1/users/<user_id>", methods=["PUT"])
 def update_user(user_id: str):
-    """
-    Update a user by id
+    
+    data = request.get_json()
+    if not data or not isinstance(data, dict):
+        return jsonify({"error": "Invalid request body"}), 400
 
-    Args:
-        user_id (str): The id of the user
+    users = db.data.get('users', [])
+    user = next((u for u in users if u.get('id') == user_id), None)
+    if not user:
+        return jsonify({"error": "user not found"}), 404
 
-    Returns:
-        dict: User details
+    for field in ["username","name", "email", "reserved_books"]:
+        if field in data:
+            user[field] = data[field]
 
-    Raises:
-        BadRequest: If the request body is invalid
-        NotFound: If the user is not found
-    """
-    return jsonify({"user": {}})
+    db.save()
+    return jsonify({"user": user})
