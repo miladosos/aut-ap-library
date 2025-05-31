@@ -11,4 +11,4 @@ class Database:
             dump(self.data)
 
 db = Database()
-books = db.data.get('books')
+books = db.data.get('books',[])
