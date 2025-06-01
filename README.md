@@ -80,7 +80,7 @@ This project is designed to help students learn and practice:
 1. Install uv (if not already installed):
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+c | sh
 ```
 
 2. Clone the repository:
