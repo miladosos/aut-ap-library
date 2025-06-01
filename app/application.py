@@ -1,16 +1,11 @@
-from flask import Flask, send_from_directory
-from flask_cors import CORS
+from flask import Flask
+from app.routes.books import books_bp
+from app.routes.users import users_bp
+from app.routes.reservation import reservation_bp
 
-app = Flask(__name__, static_folder="static", static_url_path="")
-CORS(app)
-
-
-@app.route("/")
-def index():
-    return send_from_directory("static", "index.html")
-
-
-# Add a route to serve static files
-@app.route("/<path:path>")
-def serve_static(path):
-    return send_from_directory("static", path)
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(books_bp)
+    app.register_blueprint(users_bp)
+    app.register_blueprint(reservation_bp)
+    return app
