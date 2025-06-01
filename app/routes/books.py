@@ -1,5 +1,21 @@
+from werkzeug.exceptions import NotFound, BadRequest
+
 from app.application import app
-from flask import jsonify
+from flask import jsonify, request
+import os
+import json
+
+current_dir = os.path.dirname(__file__)
+
+db_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'db.json'))
+
+with open(db_path, 'r') as file:
+    DATABASE = json.load(file)
+
+def commit():
+    with open(db_path, 'w') as f:
+        json.dump(DATABASE, f)
+
 
 @app.route("/api/v1/books")
 def get_books():
@@ -9,7 +25,7 @@ def get_books():
     Returns:
         list: List of books
     """
-    return jsonify({"books": []})
+    return jsonify({"books": DATABASE["books"]})
 
 
 @app.route("/api/v1/books/<book_id>")
@@ -26,7 +42,11 @@ def get_book(book_id: str):
     Raises:
         NotFound: If the book is not found
     """
-    return jsonify({"book": {}})
+
+    for book in DATABASE["books"]:
+        if book["id"] == book_id:
+            return jsonify({"book": book})
+    raise NotFound("Book not found")
 
 
 @app.route("/api/v1/books", methods=["POST"])
@@ -40,7 +60,20 @@ def create_book():
     Raises:
         BadRequest: If the request body is invalid
     """
-    return jsonify({"book": {}})
+
+    try:
+        book = request.get_json()
+        # print(book)
+
+        book["id"] = str(int(DATABASE["books"][-1]["id"]) + 1)
+        book["is_reserved"] = False
+        book["reserved_by"] = None
+        DATABASE["books"].append(book)
+        commit()
+
+        return jsonify({"book": book})
+    except BadRequest as e:
+        raise BadRequest(str(e))
 
 
 @app.route("/api/v1/books/<book_id>", methods=["DELETE"])
@@ -58,4 +91,14 @@ def delete_book(book_id: str):
         NotFound: If the book is not found
         BadRequest: If the book is reserved
     """
-    return jsonify({"message": "Book deleted"})
+
+    for book in DATABASE["books"]:
+        if book["id"] == book_id:
+            if book["is_reserved"]:
+                raise BadRequest("Book is reserved")
+
+            DATABASE["books"].remove(book)
+            commit()
+            return jsonify({"message": "Book deleted"})
+
+    raise NotFound("Book not found")
