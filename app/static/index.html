@@ -2,169 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System</title>
+    <title>Library Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">Library Management System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" data-section="books">Books</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-section="users">Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-section="reservations">Reservations</a>
-                    </li>
-                </ul>
+    <div class="container mt-5">
+        <h1 class="mb-4">Library Management System</h1>
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Add Book</h3>
+                <form id="addBookForm">
+                    <div class="mb-3">
+                        <input type="text" id="bookTitle" class="form-control" placeholder="Title" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="bookAuthor" class="form-control" placeholder="Author" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="bookISBN" class="form-control" placeholder="ISBN" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Book</button>
+                </form>
+                <hr>
+                <h3>Add User</h3>
+                <form id="addUserForm">
+                    <div class="mb-3">
+                        <input type="text" id="userUsername" class="form-control" placeholder="Username" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="userName" class="form-control" placeholder="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" id="userEmail" class="form-control" placeholder="Email" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add User</button>
+                </form>
+                <hr>
+                <h3>Search Books</h3>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchQuery" placeholder="Search by title">
+                    <button class="btn btn-secondary" type="button" id="searchButton">Search</button>
+                </div>
             </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <!-- Books Section -->
-        <div id="books-section" class="section active">
-            <h2>Books</h2>
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addBookModal">
-                Add New Book
-            </button>
-            <div class="table-responsive">
-                <table class="table table-striped">
+            <div class="col-md-8">
+                <h3>Books</h3>
+                <table class="table table-bordered" id="booksTable">
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Title</th>
                             <th>Author</th>
                             <th>ISBN</th>
-                            <th>Status</th>
+                            <th>Reserved</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="books-list"></tbody>
+                    <tbody></tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Users Section -->
-        <div id="users-section" class="section">
-            <h2>Users</h2>
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                Add New User
-            </button>
-            <div class="table-responsive">
-                <table class="table table-striped">
+                <hr>
+                <h3>Users</h3>
+                <table class="table table-bordered" id="usersTable">
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Username</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Reserved Books</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="users-list"></tbody>
+                    <tbody></tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Reservations Section -->
-        <div id="reservations-section" class="section">
-            <h2>Reservations</h2>
-            <div class="mb-3">
-                <label for="user-id" class="form-label">Enter User ID to view reservations:</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="user-id">
-                    <button class="btn btn-primary" id="view-reservations">View Reservations</button>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped">
+                <hr>
+                <h3>User Reservations</h3>
+                <input type="text" class="form-control mb-2" id="reservationUserId" placeholder="Enter User ID to view reservations">
+                <button class="btn btn-info mb-3" type="button" id="viewReservationsButton">View Reservations</button>
+                <table class="table table-bordered" id="reservationsTable">
                     <thead>
                         <tr>
-                            <th>Book Title</th>
-                            <th>Reservation Date</th>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>ISBN</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="reservations-list"></tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
     </div>
-
-    <!-- Add Book Modal -->
-    <div class="modal fade" id="addBookModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-book-form">
-                        <div class="mb-3">
-                            <label for="book-title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="book-title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="book-author" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="book-author" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="book-isbn" class="form-label">ISBN</label>
-                            <input type="text" class="form-control" id="book-isbn" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="save-book">Save Book</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add User Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-user-form">
-                        <div class="mb-3">
-                            <label for="user-username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="user-username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="user-name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="user-name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="user-email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="user-email" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="save-user">Save User</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="js/app.js"></script>
 </body>
-</html> 
+</html>
