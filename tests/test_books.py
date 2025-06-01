@@ -83,7 +83,7 @@ def test_delete_reserved_book(client):
     book_id = json.loads(response.data)["id"]
 
     # Create a user
-    new_user = {"username": "testuser", "name": "Test User", "email": "test@example.com"}
+    new_user = {"username": "test_user", "name": "Test User", "email": "test@example.com"}
     response = client.post("/api/v1/users", data=json.dumps(new_user), content_type="application/json")
     assert response.status_code == 201
     user_id = json.loads(response.data)["id"]
