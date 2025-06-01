@@ -1,61 +1,65 @@
 from app.application import app
-from flask import jsonify
+from flask import jsonify , request
+import json
 
 @app.route("/api/v1/books")
 def get_books():
-    """
-    Get all books
-
-    Returns:
-        list: List of books
-    """
-    return jsonify({"books": []})
+    with open("db.json") as database:
+        data = json.load(database)
+    return jsonify(data["books"])
 
 
 @app.route("/api/v1/books/<book_id>")
 def get_book(book_id: str):
-    """
-    Get a book by id
 
-    Args:
-        book_id (str): The id of the book
+    with open("db.json") as database:
+        data = json.load(database)
+    for book in data["books"]:
+        if (book["id"] == book_id):
+            return jsonify(book)
 
-    Returns:
-        dict: Book details
-
-    Raises:
-        NotFound: If the book is not found
-    """
-    return jsonify({"book": {}})
+    return jsonify({ f"ketabe {book_id} peyda nashod!"})
 
 
 @app.route("/api/v1/books", methods=["POST"])
 def create_book():
-    """
-    Create a new book
+    voroudi = request.get_json()
+    if not "title" in voroudi :
+        return jsonify({'esm nadare ketabet!'})
+    elif not "author" in voroudi:
+        return jsonify({'nevisande nadare ketabet!'})
+    elif not "isbn" in voroudi:
+        return jsonify({'ketabet shenase nadare!'})
+    with open("db.json") as f:
+        database = json.load(f)
 
-    Returns:
-        dict: Book details
+    voroudi["id"] = str(len(database["books"]) + 1)
+    voroudi["is_reserved"] = False
+    voroudi["reserved_by"] = None
 
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"book": {}})
+    database["books"].append(voroudi)
+    with open("db.json", "w") as f:
+        json.dump(database, f)
+    return jsonify(voroudi)
 
 
 @app.route("/api/v1/books/<book_id>", methods=["DELETE"])
 def delete_book(book_id: str):
-    """
-    Delete a book by id
+    with open("db.json") as database:
+        data = json.load(database)
 
-    Args:
-        book_id (str): The id of the book
+    for book in data["books"]:
+        if (book["id"] == book_id):
+            if (book["is_reserved"]):
+                return jsonify({f"in ketab {book_id} reserve shode!"})
 
-    Returns:
-        dict: Success message
+            else:
+                data["books"].remove(book)
 
-    Raises:
-        NotFound: If the book is not found
-        BadRequest: If the book is reserved
-    """
+                with open("db.json", "w") as db:
+                    json.dump(data, db)
+
+                return jsonify()
+        return jsonify({'chenin ketabi nadarim!'})
     return jsonify({"message": "Book deleted"})
+
