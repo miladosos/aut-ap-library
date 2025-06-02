@@ -1,61 +1,53 @@
 from app.application import app
-from flask import jsonify
+from flask import jsonify, request
+import json
+
+def sync(data_base):
+    with open('/home/arian/main/code/chert-pert/aut-ap-library/db.json', 'w') as fp:
+        json.dump(data_base, fp)
 
 @app.route("/api/v1/books")
 def get_books():
-    """
-    Get all books
-
-    Returns:
-        list: List of books
-    """
-    return jsonify({"books": []})
+    with open('/home/arian/main/code/chert-pert/aut-ap-library/db.json') as fp:
+        data_base = json.load(fp)
+    return jsonify(data_base['books'])
 
 
 @app.route("/api/v1/books/<book_id>")
 def get_book(book_id: str):
-    """
-    Get a book by id
-
-    Args:
-        book_id (str): The id of the book
-
-    Returns:
-        dict: Book details
-
-    Raises:
-        NotFound: If the book is not found
-    """
-    return jsonify({"book": {}})
+    with open('/home/arian/main/code/chert-pert/aut-ap-library/db.json') as fp:
+        data_base = json.load(fp)
+    book = {}
+    for i in data_base['books']:
+        if str(i['id']) == book_id:
+            book = i
+            break
+    return jsonify({"book": book})
 
 
 @app.route("/api/v1/books", methods=["POST"])
 def create_book():
-    """
-    Create a new book
-
-    Returns:
-        dict: Book details
-
-    Raises:
-        BadRequest: If the request body is invalid
-    """
-    return jsonify({"book": {}})
+    with open('/home/arian/main/code/chert-pert/aut-ap-library/db.json') as fp:
+        data_base = json.load(fp)
+    book = json.loads(request.data.decode())
+    print(book)
+    book['id'] = str(int(data_base['books'][-1]['id'])+1)
+    book['is_reserved'] = False
+    book['reserved_by'] = None
+    data_base['books'].append(book)
+    sync(data_base)
+    return jsonify({"book": book})
 
 
 @app.route("/api/v1/books/<book_id>", methods=["DELETE"])
 def delete_book(book_id: str):
-    """
-    Delete a book by id
-
-    Args:
-        book_id (str): The id of the book
-
-    Returns:
-        dict: Success message
-
-    Raises:
-        NotFound: If the book is not found
-        BadRequest: If the book is reserved
-    """
+    with open('/home/arian/main/code/chert-pert/aut-ap-library/db.json') as fp:
+        data_base = json.load(fp)
+    book = {}
+    for i in data_base['books']:
+        if str(i['id']) == book_id:
+            book = i
+            break
+    del book
+    sync(data_base)
     return jsonify({"message": "Book deleted"})

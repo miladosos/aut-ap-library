@@ -260,8 +260,6 @@ paths:
         description: Book ID
     post:
       summary: Reserve a book
-      security:
-        - user_id: []
       responses:
         "200":
           description: Book reserved
