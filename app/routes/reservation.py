@@ -1,62 +1,93 @@
+from flask import Flask, request, jsonify
+from werkzeug.exceptions import BadRequest, NotFound, Forbidden
 from datetime import datetime
+import json
 
-from flask import jsonify, request
+app = Flask(__name__)
+DATA_FILE = 'db.json'
 
-from app.application import app
+def load_data():
+    with open(DATA_FILE, 'r') as f:
+        return json.load(f)
 
+def save_data(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
-@app.route("/api/v1/books/<book_id>/reserve", methods=["POST"])
-def reserve_book(book_id: str):
-    """
-    Reserve a book for a user
+def find_by_id(items, item_id):
+    for item in items:
+        if item.get('id') == str(item_id):
+            return item
+    return None
 
-    Args:
-        book_id (str): The id of the book to reserve
+@app.route('/api/v1/books/<string:book_id>/reserve', methods=['POST'])
+def reserve(book_id):
+    user_id = request.headers.get('user_id')
+    if not user_id:
+        raise BadRequest("Missing user_id in request headers.")
 
-    Returns:
-        dict: Reservation details
+    data = load_data()
+    user = find_by_id(data.get('users', []), user_id)
+    book = find_by_id(data.get('books', []), book_id)
 
-    Raises:
-        BadRequest: If user_id header is missing or book is already reserved
-        NotFound: If the book or user is not found
-    """
-    return jsonify(
-        {"book_id": book_id, "user_id": request.headers.get("user_id"), "reservation_date": datetime.now().isoformat()}
-    )
+    if not user:
+        raise NotFound("User not found.")
+    if not book:
+        raise NotFound("Book not found.")
+    if book.get('is_reserved'):
+        raise BadRequest("Book is already reserved.")
 
+    book['is_reserved'] = True
+    book['reserved_by'] = user_id
+    book['reservation_date'] = datetime.now().isoformat()
+    save_data(data)
 
-@app.route("/api/v1/books/<book_id>/reserve", methods=["DELETE"])
-def cancel_reservation(book_id: str):
-    """
-    Cancel a book reservation
+    return jsonify({
+        'book_id': book_id,
+        'user_id': user_id,
+        'reservation_date': book['reservation_date'],
+        'message': f'Book "{book["title"]}" reserved successfully.'
+    })
 
-    Args:
-        book_id (str): The id of the book to cancel reservation
+@app.route('/api/v1/books/<string:book_id>/reserve', methods=['DELETE'])
+def unreserve(book_id):
+    user_id = request.headers.get('user_id')
+    if not user_id:
+        raise BadRequest("Missing user_id in header")
 
-    Returns:
-        dict: Success message
+    data = load_data()
+    book = find_by_id(data.get('books', []), book_id)
 
-    Raises:
-        BadRequest: If user_id header is missing or book is not reserved by user
-        NotFound: If the book is not found
-    """
-    return jsonify({"message": "Reservation cancelled successfully"})
+    if not book:
+        raise NotFound("Book not found")
+    if not book.get('is_reserved'):
+        raise BadRequest("Book is not reserved")
+    if book.get('reserved_by') != user_id:
+        raise Forbidden("You can only cancel your own reservations")
 
+    book['is_reserved'] = False
+    book['reserved_by'] = None
+    book.pop('reservation_date', None)
+    save_data(data)
 
-@app.route("/api/v1/users/<user_id>/reservations")
-def get_user_reservations(user_id: str):
-    """
-    Get all reservations for a user
+    return jsonify({'message': 'Reservation cancelled successfully'})
 
-    Args:
-        user_id (str): The id of the user
+@app.route('/api/v1/users/<string:user_id>/reservations')
+def list_user_reservations(user_id):
+    requester = request.headers.get('user_id')
+    if not requester:
+        raise BadRequest("Missing user_id in header")
+    if requester != user_id:
+        raise Forbidden("You can only view your own reservations")
 
-    Returns:
-        list: List of reserved books
+    data = load_data()
+    user = find_by_id(data.get('users', []), user_id)
+    if not user:
+        raise NotFound("User not found")
 
-    Raises:
-        BadRequest: If user_id header is missing
-        NotFound: If the user is not found
-        Forbidden: If requesting user is not the same as target user
-    """
-    return jsonify([])
+    reservations = [
+        b for b in data.get('books', [])
+        if b.get('is_reserved') and b.get('reserved_by') == user_id
+    ]
+
+    return jsonify(reservations)
